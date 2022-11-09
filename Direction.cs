@@ -100,8 +100,6 @@ namespace PooProject {
             Direction[] result = new Direction[d_index];
             Array.Copy(directions, result, d_index);
 
-            
-
             return result;
         }
 

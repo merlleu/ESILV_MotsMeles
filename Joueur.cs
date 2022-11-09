@@ -7,6 +7,7 @@ namespace PooProject {
         private string nom; // name of the player
         private List<string> words; // list of words found by the player
         private int score; // score of the player
+        private int rounds_won; // number of rounds won by the player
 
         public int Score {
             get => score;
@@ -27,6 +28,14 @@ namespace PooProject {
             score = 0;
         }
 
+        /// Creates a new player with the given name, scores and rounds won.
+        public Joueur(string nom, int score, int rounds_won) {
+            this.nom = nom;
+            words = new List<string>();
+            this.score = score;
+            this.rounds_won = rounds_won;
+        }
+
         /// Adds a word to the list of found words & grant points.
         public void Add_Mot(string mot) {
             words.Add(mot);
@@ -35,7 +44,7 @@ namespace PooProject {
         
         /// Returns a string representation of the player.
         public override string ToString() {
-            return $"{nom}, {score} points ({words.Count} mots)";
+            return $"{nom};{score};{rounds_won}";
         }
 
         /// Clear the player's list of already found words.
@@ -46,6 +55,7 @@ namespace PooProject {
         /// Grants the player a bonus if he won the round in time.
         public void Won_Round() {
             score += 100;
+            rounds_won++;
         }
     }
 }

@@ -16,26 +16,38 @@ namespace PooProject {
         // number of seconds before the turn ends
         private int timeout;
         private int difficulty;
+        private int cur_player;
 
         private int ui_x = -1;
         private int ui_y = -1;
         private Direction ui_direction = new Direction(0, 0);
         private int ui_wordLength = 2;
+        private string save_path;
 
         private DateTime ui_end_time = DateTime.Now;
         
-        public Jeu(Dictionnaire dictionnary) {
-            this.dictionnary = dictionnary;
+        public Jeu() {
+            this.dictionnary = new Dictionnaire();
             this.grid = new Plateau(dictionnary);
             this.grid_history = new List<Plateau>();
             this.players = LoadPlayers();
-            this.timeout = 300;
+            this.timeout = AskTimeout();
             this.difficulty = 1;
+            this.save_path = "game.csv";
+        }
+
+
+        /// Load Jeu from save file.
+        public Jeu(string save_path) {
+            this.save_path = save_path;
+            FromFile();
+            grid = new Plateau(dictionnary);
+
         }
 
         /// Ask user for the round duration.
         static int AskTimeout() {
-            Console.WriteLine("Entrez le temps de réflexion par joueur (en secondes) > ");
+            Console.Write("Entrez le temps de réflexion par joueur (en secondes) > ");
             int timeout = int.Parse(Console.ReadLine());
 
             if (timeout < 0) {
@@ -47,12 +59,11 @@ namespace PooProject {
         
         // Ask user for the number of players and their names.
         static Joueur[] LoadPlayers() {
-            return new Joueur[] {
-                new Joueur("Joueur 1")
-            };
-
             Console.Write("Player count (1-9) > ");
-            int nb = int.Parse(Console.ReadLine());
+            // try to parse the input as an int
+            int nb;
+            int.TryParse(Console.ReadLine(), out nb);
+            
             Joueur[] players;
             if (nb >= 1 && nb <= 9) {
                 players = new Joueur[nb];
@@ -68,22 +79,34 @@ namespace PooProject {
             return players;
         }
         
-        public void Start() {
+        public void Start(bool resume = false) {
             for (;difficulty <= 5; difficulty ++) {
-                foreach (Joueur player in players) {
-                    StartPlayerTurn(player);
+                cur_player = 0;
+                for (; cur_player < players.Length; cur_player++) {
+                    StartPlayerTurn(players[cur_player], resume);
+                    if (resume) resume = false;
+
+                    cur_player++;
                 }
             }
             
         }
 
-        void StartPlayerTurn(Joueur player) {
+        void StartPlayerTurn(Joueur player, bool resume) {
             // first, we set the timeout
             ui_end_time = DateTime.Now.AddSeconds(timeout);
-            // player.ClearWords();
+            player.ClearWords();
             // grid_history.Add(grid);
             grid = new Plateau(dictionnary);
-            grid.Load(difficulty);
+            
+            // if we resume, we load the grid from the save file instead of creating a new one
+            if (resume) grid.FromFile("grid.csv");
+            else grid.Load(difficulty);
+
+            // Save current game
+            ToFile();
+            grid.ToFile("grid.csv");
+
             LoopPlayerTurn(player);
         }
 
@@ -94,14 +117,18 @@ namespace PooProject {
                 ui_direction = new Direction(0, 0);
                 ui_wordLength = 2;
                 Console.Clear();
-                grid.ToFile("grid.csv");
                 RefreshPlayerUI(player);
 
                 int step = 0;
-                while (step < 3) {
+                while (step < 3 && DateTime.Now <= ui_end_time) {
                     if (step == 0) step += AskForPosition(player);
                     else if (step == 1) step += AskForDirection(player);
                     else if (step == 2) step += AskForWordLength(player);
+                }
+
+                if (DateTime.Now > ui_end_time) {
+                    playing = false;
+                    continue;
                 }
 
                 // Now we have all the user inputs
@@ -124,13 +151,13 @@ namespace PooProject {
                 }
 
                 // The round is ended if the player has no more time or if he has no more words to play
-                if (DateTime.Now > ui_end_time) {
-                    playing = false;
-                }
+                
                 if (player.Words.Count == grid.Words.Length) {
                     player.Won_Round();
                     playing = false;
                 }
+
+                ToFile();
             }
             
         }
@@ -178,7 +205,9 @@ namespace PooProject {
                 Console.SetCursorPosition(pos, Console.CursorTop);
                 Console.Write("   ");
                 Console.SetCursorPosition(pos, Console.CursorTop);
-            } while(keyinfo.Key != ConsoleKey.Enter );
+
+
+            } while(keyinfo.Key != ConsoleKey.Enter && DateTime.Now <= ui_end_time);
 
             Console.WriteLine();
             return 1;
@@ -222,7 +251,7 @@ namespace PooProject {
                         ui_direction = new Direction(0, 0);
                         return -1;
                 }
-            } while(keyinfo.Key != ConsoleKey.Enter );
+            } while(keyinfo.Key != ConsoleKey.Enter && DateTime.Now <= ui_end_time);
 
             Console.WriteLine();
             return 1;
@@ -271,10 +300,41 @@ namespace PooProject {
                         ui_wordLength = 2;
                         return -1;
                 }
-            } while(keyinfo.Key != ConsoleKey.Enter );
+            } while(keyinfo.Key != ConsoleKey.Enter && DateTime.Now <= ui_end_time);
 
             Console.WriteLine();
             return 1;
+        }
+
+        void ToFile() {
+            // file format:
+            // difficulty,lang,player_count,timeout,current_player
+            // player1_name,player1_score,player1_rounds_won
+            // player2_name,player2_score,player2_rounds_won
+            // ...
+
+            string s = "";
+            s += $"{difficulty};{Dictionnaire.GetLanguageString(dictionnary.Language)};{players.Length};{timeout};{cur_player}\n";
+            foreach (Joueur player in players) {
+                s+= player.ToString() + "\n";
+            }
+
+            File.WriteAllText(save_path, s);
+        }
+
+        void FromFile() {
+            string[] lines = File.ReadAllLines(save_path);
+            string[] first_line = lines[0].Split(';');
+            difficulty = int.Parse(first_line[0]);
+            dictionnary = new Dictionnaire(first_line[1]);
+            players = new Joueur[int.Parse(first_line[2])];
+            timeout = int.Parse(first_line[3]);
+            cur_player = int.Parse(first_line[4]);
+
+            for (int i = 1; i < lines.Length; i++) {
+                string[] player_data = lines[i].Split(';');
+                players[i-1] = new Joueur(player_data[0], int.Parse(player_data[1]), int.Parse(player_data[2]));
+            }
         }
     }
 }

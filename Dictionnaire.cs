@@ -12,8 +12,17 @@ namespace PooProject {
         private GameLanguage language;
 
         public Dictionnaire() {
-            language = GetLanguage();
+            GetLanguage();
             dictionnary = LoadDictionnaire();
+        }
+
+        public Dictionnaire(string lang) {
+            language = (GameLanguage) GetLanguageFromString(lang);
+            dictionnary = LoadDictionnaire();
+        }
+
+        public GameLanguage Language {
+            get => language;
         }
 
         /// An enum representing the dictionnary languages available.
@@ -26,18 +35,51 @@ namespace PooProject {
         /// message if input is invalid, 
         /// else return the parsed language.
         /// Valid inputs are "english", "en", "french" and "fr".
-        public static GameLanguage GetLanguage() {
-            return GameLanguage.FRENCH;
-            // Console.Write("Langue (en/fr, defaut=fr) > ");
-            // string input = Console.ReadLine();
-            // if (input == "english" || input == "en") {
-            //     return GameLanguage.ENGLISH;
-            // } else if (input == "french" || input == "fr" || input == "") {
-            //     return GameLanguage.FRENCH;
-            // } else {
-            //     Console.WriteLine("Invalid input, please try again.");
-            //     return GetLanguage();
-            // }
+        public void GetLanguage() {
+            Console.Write("Langue (en/fr, defaut=fr) > ");
+            string input = Console.ReadLine();
+            GameLanguage? lang = GetLanguageFromString(input);
+            if (lang != null) {
+                this.language = (GameLanguage)lang;
+            } else {
+                Console.WriteLine("Langue inconnue, veuillez réessayer.");
+                GetLanguage();
+            }
+        }
+
+        public static string GetLanguageString(GameLanguage language) {
+            string lang = "";
+            switch (language) {
+                case GameLanguage.ENGLISH:
+                    lang = "english";
+                    break;
+                case GameLanguage.FRENCH:
+                    lang = "french";
+                    break;
+            }
+            return lang;
+        }
+
+
+
+        /// Parse the language from string.
+        /// Valid strings are "english" and "french".
+        /// If the string is empty/invalid, the language is set to french.
+        public static GameLanguage? GetLanguageFromString(string language) {
+            GameLanguage? lang = null;
+            switch (language) {
+                case "english":
+                case "en":
+                    lang = GameLanguage.ENGLISH;
+                    break;
+                case "french":
+                case "fr":
+                case "":
+                    lang = GameLanguage.FRENCH;
+                    break;
+            }
+
+            return lang;
         }
 
         /// This method loads the dictionnary from a file

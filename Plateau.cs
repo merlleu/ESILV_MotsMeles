@@ -12,7 +12,7 @@ namespace PooProject {
         private Direction[] doable_directions;
         
         /// Creates an empty grid
-        public Plateau(Dictionnaire dictionnary)  {
+        public Plateau(Dictionnaire dictionnary) {
             this.dictionnary = dictionnary;
             this.grid = new char[0,0];
             this.words = new string[0];
@@ -39,14 +39,13 @@ namespace PooProject {
             this.difficulty = difficulty;
             GetDimensions();
             this.doable_directions = Direction.GetAvailableDirections(difficulty);
-            this.grid = GenerateGrid(dictionnary, difficulty, width, height);
-            GatherGeneratedWords();
+            GenerateGrid(dictionnary, difficulty, width, height);
         }
 
         void GetDimensions() {
             // width & height MUST be between 3 and 25.
-            width = 5 + difficulty * 2;
-            height = 5 + difficulty * 2;
+            width = 5 + difficulty * 3;
+            height = 5 + difficulty * 3;
         }
 
         /// Represents the grid as a string.
@@ -98,44 +97,89 @@ namespace PooProject {
                     grid[i, j] = cells[j][0];
                 }
             }
+
+            doable_directions = Direction.GetAvailableDirections(difficulty);
         }
 
         /// This method generates the grid of letters.
-        static char[,] GenerateGrid(Dictionnaire dictionnary, int difficulty, int width, int height) {
-            char[,] g = new char[width, height];
+        void GenerateGrid(Dictionnaire dictionnary, int difficulty, int width, int height) {
+            grid = new char[width, height]; // fill with \0
             Random r = new Random();
-            for (int i = 0; i < width; i++) {
-                for (int j = 0; j < height; j++) {
-                    // generate a random letter between 'A' and 'Z'
-                    // here we use the ASCII uppercase letters range
-                    // (faster than array/string index lookup)
-                    g[i, j] = (char) r.Next(65, 91);
+            // the basic idea is: 
+            // N times: 
+            // - pick a direction
+            // - pick a starting point
+            // - pick a word length
+            // - find a word that fits 
+            // (we select randomly an index start in the word list 
+            //  to avoid always picking words from the beginning of the alphabet)
+            // - put it in the grid
+            // - add it to the list of words
+
+
+            words = new string[3 + difficulty *  5];
+            for (int i = 0; i < words.Length;) {
+                Direction direction = doable_directions[r.Next(0, doable_directions.Length - 1)];
+
+                int x = r.Next(0, width);
+                int y = r.Next(0, height);
+
+                int length = r.Next(4, width);
+                
+                if (!CheckInBounds(x + direction.X * (length), y + direction.Y * (length))) {
+                    continue;
                 }
-            }
-            return g;
-        }
+                
+                string[] w = dictionnary.GetWords(length);
+                int wordIndex = r.Next(0, w.Length);
 
-        /// This method checks if a cell is part of a word on the grid.
-        /// This method is really heavy and we could implement binary trees or mnemoization to make it faster.
-        /// But I guess this is clearly out of scope for this project.
-        void GatherGeneratedWords() {
-            // we have no idea how many words we'll find, so we use a list.
-            List<string> words = new List<string>();
-
-            // we use a nested loop to check every cell of the grid.
-            for (int i = 0; i < width; i++) {
-                for (int j = 0; j < height; j++) {
-                    foreach (Direction direction in doable_directions) {
-                        FindWordsForCell(i, j, direction, words);
+                for (int j = wordIndex; j < w.Length; j++) {
+                    if (CanPlaceWord(w[j], x, y, direction) && !words.Contains(w[j])) {
+                        PlaceWord(w[j], x, y, direction);
+                        words[i] = w[j];
+                        i++;
+                        Console.WriteLine($"[{i}] Placed {w[j]} at {x}, {y} in direction {direction.ToString()}, {j}{wordIndex}/{w.Length}");
+                        break;
                     }
                 }
             }
 
-            // sort the words alphabetically
-            words.Sort();
-            // remove duplicates (fast because the list is sorted)
-            words = words.Distinct().ToList();
-            this.words = words.ToArray();
+            // fill the rest of the grid with random letters
+            for (int i = 0; i < width; i++) {
+                for (int j = 0; j < height; j++) {
+                    if (grid[i, j] == '\0') {
+                        grid[i, j] = (char)((int)'A' + r.Next(0, 26));
+                    }
+                }
+            }
+
+            Array.Sort(words);
+
+        }
+
+        /// This method checks if a word can be placed in the grid.
+        /// We assume that the word fits in the grid.
+        /// Then we check if there are no contradictory letters in the way.
+        bool CanPlaceWord(string word, int x, int y, Direction direction) {
+            bool canPlace = true;
+            for (int i = 0; i < word.Length && canPlace; i++) {
+                x += direction.X;
+                y += direction.Y;
+                if (grid[x, y] != '\0' && grid[x, y] != word[i]) {
+                    canPlace = false;
+                }
+            }
+            return canPlace;
+        }
+        
+        /// This method places a word in the grid.
+        /// We assume that the word can be placed & fits in the grid.
+        void PlaceWord(string word, int x, int y, Direction direction) {
+            for (int i = 0; i < word.Length; i++) {
+                x += direction.X;
+                y += direction.Y;
+                grid[x, y] = word[i];
+            }
         }
 
         /// This method checks if a word is found on a cell in a given direction.
@@ -209,7 +253,7 @@ namespace PooProject {
             }
             Console.ForegroundColor = ConsoleColor.White;
 
-            Console.WriteLine($"Progression : {player.Words.Count} / {words.Length} ({((int) (player.Score / (float) words.Length * 100))}%)");
+            Console.WriteLine($"Progression : {player.Words.Count} / {words.Length} ({((int) (player.Words.Count / (float) words.Length * 100))}%)");
             Console.Write($"Mots: ");
             foreach (string word in words ) {
                 if (!player.Words.Contains(word)) {

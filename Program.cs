@@ -4,15 +4,13 @@ namespace PooProject {
     public class Program {
         public static void Main(string[] args) {
             Console.ForegroundColor = ConsoleColor.White;
-            // create dictionnary
-            Dictionnaire dictionnary = new Dictionnaire();
 
-            // Console.WriteLine(dictionnary.ToString());
             // create game
-            Jeu game = new Jeu(dictionnary);
+            // load save from file if an argument is supplied.
+            Jeu game = args.Length > 0 ? new Jeu(args[0]) : new Jeu();
             
             // start game
-            game.Start();
+            game.Start(args.Length > 0);
         }
     }
 }
