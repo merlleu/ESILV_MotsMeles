@@ -27,7 +27,7 @@ namespace PooProject {
         /// else return the parsed language.
         /// Valid inputs are "english", "en", "french" and "fr".
         public static GameLanguage GetLanguage() {
-            return GameLanguage.ENGLISH;
+            return GameLanguage.FRENCH;
             // Console.Write("Langue (en/fr, defaut=fr) > ");
             // string input = Console.ReadLine();
             // if (input == "english" || input == "en") {

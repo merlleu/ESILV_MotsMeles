@@ -56,28 +56,19 @@ namespace PooProject {
         /// Checks if the direction is valid (according to the game rules).
         public bool IsValid(int difficulty) {
             bool ok = false;
-            switch ((x,y)) {
-                case (0,1): // O
-                case (1,0): // S
-                case (-1,0): // N
-                    ok = difficulty >= 1;
+            switch (difficulty) {
+                case 1:
+                    ok = (x == 0 || y == 0);
                     break;
-                case (0,-1): // E
-                    ok = difficulty >= 2;
+                case 2:
+                    ok = (x == 0 || y == 0 || Math.Abs(x) == Math.Abs(y));
                     break;
-                case (1,1): // SO
-                case (-1,-1): // NE
-                    ok = difficulty >= 3;
+                case 3:
+                    ok = (Math.Abs(x) <= 1 && Math.Abs(y) <= 1);
                     break;
-                case (-1,1): // NO
-                    ok = difficulty >= 4;
-                    break;
-                case (1,-1): // SE
-                    ok = difficulty >= 5;
-                    break;
-
-                default: // unknown variant, always invalid !
-                    break;
+            }
+            if (x == 0 && y == 0) {
+                ok = false;
             }
             return ok;
         }

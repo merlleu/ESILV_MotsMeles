@@ -80,8 +80,8 @@ namespace PooProject {
         void StartPlayerTurn(Joueur player) {
             // first, we set the timeout
             ui_end_time = DateTime.Now.AddSeconds(timeout);
-
-            grid_history.Add(grid);
+            // player.ClearWords();
+            // grid_history.Add(grid);
             grid = new Plateau(dictionnary);
             grid.Load(difficulty);
             LoopPlayerTurn(player);
@@ -124,7 +124,11 @@ namespace PooProject {
                 }
 
                 // The round is ended if the player has no more time or if he has no more words to play
-                if (DateTime.Now > ui_end_time || player.Words.Count == grid.Words.Length) {
+                if (DateTime.Now > ui_end_time) {
+                    playing = false;
+                }
+                if (player.Words.Count == grid.Words.Length) {
+                    player.Won_Round();
                     playing = false;
                 }
             }
