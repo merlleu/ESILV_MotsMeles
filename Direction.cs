@@ -66,6 +66,10 @@ namespace PooProject {
                 case 3:
                     ok = (Math.Abs(x) <= 1 && Math.Abs(y) <= 1);
                     break;
+                case 4:
+                case 5:
+                    ok = true;
+                    break;
             }
             if (x == 0 && y == 0) {
                 ok = false;

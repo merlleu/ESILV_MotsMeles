@@ -4,6 +4,7 @@ namespace PooProject {
     public class Program {
         public static void Main(string[] args) {
             Console.ForegroundColor = ConsoleColor.White;
+            Console.Clear();
 
             // create game
             // load save from file if an argument is supplied.

@@ -15,6 +15,8 @@ namespace PooProject {
         private Dictionnaire dictionnary;
         // number of seconds before the turn ends
         private int timeout;
+
+        // round number in range [1; 5]
         private int difficulty;
         private int cur_player;
 
@@ -81,21 +83,21 @@ namespace PooProject {
         
         public void Start(bool resume = false) {
             for (;difficulty <= 5; difficulty ++) {
-                cur_player = 0;
+                if (!resume) cur_player = 0;
                 for (; cur_player < players.Length; cur_player++) {
                     StartPlayerTurn(players[cur_player], resume);
                     if (resume) resume = false;
-
-                    cur_player++;
                 }
             }
-            
+
+            // end of game
+            ShowGameSummary();
         }
 
         void StartPlayerTurn(Joueur player, bool resume) {
             // first, we set the timeout
             ui_end_time = DateTime.Now.AddSeconds(timeout);
-            player.ClearWords();
+            if (!resume) player.ClearWords();
             // grid_history.Add(grid);
             grid = new Plateau(dictionnary);
             
@@ -159,15 +161,145 @@ namespace PooProject {
 
                 ToFile();
             }
+
+
+            if (player.Words.Count != grid.Words.Length && DateTime.Now > ui_end_time) {
+                ShowTimeOut(player);
+            }
             
         }
 
+
+        /// This method returns the indexes of the players
+        /// Sorted by HIGHEST SCORE first then by their names if they have the same score. 
+        int[] GetPlayerRanking() {
+            int[] ranking = new int[players.Length];
+            for (int i = 0; i < players.Length; i++) {
+                ranking[i] = i;
+            }
+
+            for (int i = 0; i < players.Length; i++) {
+                for (int j = i + 1; j < players.Length; j++) {
+                    if (
+                        players[ranking[i]].Score < players[ranking[j]].Score || 
+                        (
+                            players[ranking[i]].Score == players[ranking[j]].Score && 
+                            players[ranking[i]].Nom.CompareTo(players[ranking[j]].Nom) > 0
+                        )
+                    ) {
+                        int tmp = ranking[i];
+                        ranking[i] = ranking[j];
+                        ranking[j] = tmp;
+                    }
+                }
+            }
+
+            return ranking;
+        }
+
+        /// Displays the ranking on top of the screen
+        /// It shows a bar filled with players
+        /// [Player 1 (10)] [Player 2 (5)] [Player 3 (0)]
+        void ShowRankingHeader() {
+            int total_width = Console.WindowWidth - 2;
+            int used_width = 0;
+            int total_points = 0;
+            for (int i = 0; i < players.Length; i++) {
+                // we calculate the minimum width of the bar
+                used_width += players[i].Nom.Length + 4 + players[i].Score.ToString().Length + 2;
+                total_points += 50 + players[i].Score;
+                
+            }
+
+            // we calculate the remaining width
+            int remaining_width = total_width - used_width;
+            if (remaining_width < 0) remaining_width = 0;
+
+            // sort the players by score
+            int[] ranking = GetPlayerRanking();
+
+            // we display the ranking
+            // the more points a player has, the more space he gets
+            for (int i = 0; i < ranking.Length; i++) {
+                Joueur player = players[ranking[i]];
+                Console.ForegroundColor = GetPlayerColor(ranking[i]);
+                Console.Write($"[{player.Nom} ({player.Score})");
+
+                int bar_width = (int) Math.Round((double) (50+player.Score) / total_points * remaining_width);
+                if (bar_width > 0) Console.Write(new string(' ', bar_width));
+                Console.Write("] ");
+            }
+
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine();
+        }
+
+        ConsoleColor GetPlayerColor (int player_index) {
+            switch (player_index) {
+                case 0: return ConsoleColor.Red;
+                case 1: return ConsoleColor.Green;
+                case 2: return ConsoleColor.Blue;
+                case 3: return ConsoleColor.Yellow;
+                case 4: return ConsoleColor.Magenta;
+                case 5: return ConsoleColor.Cyan;
+                case 6: return ConsoleColor.DarkRed;
+                case 7: return ConsoleColor.DarkGreen;
+                case 8: return ConsoleColor.DarkBlue;
+                default: return ConsoleColor.White;
+            }
+        }
+
+
         void RefreshPlayerUI (Joueur player, bool keep_cursor = false) {
             Console.Clear();
+            ShowRankingHeader();
             string TimeLeft = (ui_end_time - DateTime.Now).ToString(@"mm\:ss");
             Console.WriteLine($"[Round {difficulty} | {player.Nom}] Temps restant : {TimeLeft}\n");
             grid.DisplayTableau(player, ui_x, ui_y, ui_direction, ui_wordLength);
             Console.WriteLine();
+        }
+
+        void ShowTimeOut(Joueur player) {
+            Console.Clear();
+            ShowRankingHeader();
+            Console.WriteLine($"[Round {difficulty} | {player.Nom}] Temps écoulé !\n");
+            Console.WriteLine();
+            Console.WriteLine("Appuyez sur ENTRER pour continuer...");
+            Console.ReadLine();
+        }
+
+
+        /// At the end of the game
+        /// It displays the ranking.
+
+        void ShowGameSummary() {
+            Console.Clear();
+            ShowRankingHeader();
+            Console.WriteLine();
+            
+            Console.WriteLine("Résumé de la partie :");
+            int[] ranking = GetPlayerRanking();
+            for (int i = 0; i < ranking.Length; i++) {
+                Joueur player = players[ranking[i]];
+                ConsoleColor color = GetPlayerColor(ranking[i]);
+                WriteWithColor($"{i+1} - ", ConsoleColor.White);
+                WriteWithColor(player.Nom, color);
+                WriteWithColor(" : ", ConsoleColor.White);
+                WriteWithColor(""+player.Score, color);
+                WriteWithColor(" points(", ConsoleColor.White);
+                WriteWithColor(""+player.RoundsWon, color);
+                WriteWithColor(" rounds gagnés)", ConsoleColor.White);
+                Console.WriteLine();
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+            
+            Console.ReadKey();
+
+        }
+
+        void WriteWithColor(string text, ConsoleColor color) {
+            Console.ForegroundColor = color;
+            Console.Write(text);
         }
 
         
@@ -333,7 +465,7 @@ namespace PooProject {
 
             for (int i = 1; i < lines.Length; i++) {
                 string[] player_data = lines[i].Split(';');
-                players[i-1] = new Joueur(player_data[0], int.Parse(player_data[1]), int.Parse(player_data[2]));
+                players[i-1] = new Joueur(player_data[0], int.Parse(player_data[1]), int.Parse(player_data[2]), player_data[3].Split(' ').ToList());
             }
         }
     }

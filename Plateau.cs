@@ -62,7 +62,7 @@ namespace PooProject {
             s += "\n";
             for (int i = 0; i < width; i++) {
                 for (int j = 0; j < height; j++) {
-                    s += grid[i, j] + (j == height - 1 ? "": ";");
+                    s += grid[j, i] + (j == height - 1 ? "": ";");
                 }
                 s += "\n";
             }
@@ -131,6 +131,9 @@ namespace PooProject {
                 }
                 
                 string[] w = dictionnary.GetWords(length);
+                if (w == null || w.Length == 0) {
+                    continue;
+                }
                 int wordIndex = r.Next(0, w.Length);
 
                 for (int j = wordIndex; j < w.Length; j++) {
