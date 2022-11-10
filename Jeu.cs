@@ -255,7 +255,12 @@ namespace PooProject {
             Console.Clear();
             ShowRankingHeader();
             string TimeLeft = (ui_end_time - DateTime.Now).ToString(@"mm\:ss");
-            Console.WriteLine($"[Round {difficulty} | {player.Nom}] Temps restant : {TimeLeft}\n");
+            WriteWithColor($"[Round {difficulty} | ", ConsoleColor.White);
+            WriteWithColor($"{player.Nom}", GetPlayerColor(cur_player));
+            WriteWithColor("] Temps restant : ", ConsoleColor.White);
+            WriteWithColor($"{TimeLeft}\n\n", ConsoleColor.Blue);
+            Console.ForegroundColor = ConsoleColor.White;
+            
             grid.DisplayTableau(player, ui_x, ui_y, ui_direction, ui_wordLength);
             Console.WriteLine();
         }
@@ -263,8 +268,12 @@ namespace PooProject {
         void ShowTimeOut(Joueur player) {
             Console.Clear();
             ShowRankingHeader();
-            Console.WriteLine($"[Round {difficulty} | {player.Nom}] Temps écoulé !\n");
-            Console.WriteLine();
+            WriteWithColor($"[Round {difficulty} | ", ConsoleColor.White);
+            WriteWithColor($"{player.Nom}", GetPlayerColor(cur_player));
+            WriteWithColor("] ", ConsoleColor.White);
+            WriteWithColor("Temps écoulé !\n\n\n", ConsoleColor.Red);
+            Console.ForegroundColor = ConsoleColor.White;
+
             Console.WriteLine("Appuyez sur ENTRER pour continuer...");
             Console.ReadLine();
         }
