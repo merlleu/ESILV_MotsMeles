@@ -49,11 +49,12 @@ namespace PooProject {
 
         /// Ask user for the round duration.
         static int AskTimeout() {
-            Console.Write("Entrez le temps de réflexion par joueur (en secondes) > ");
-            int timeout = int.Parse(Console.ReadLine());
+            Console.Write("Entrez le temps de réflexion par joueur (en secondes, min: 1) > ");
+            int timeout;
+            int.TryParse(Console.ReadLine(), out timeout);
 
-            if (timeout < 0) {
-                Console.WriteLine("Le temps de réflexion doit être positif.");
+            if (timeout <= 0) {
+                Console.WriteLine("Temps de réflexion invalide.");
                 timeout =  AskTimeout();
             }
             return timeout;
