@@ -381,11 +381,13 @@ namespace PooProject {
                     case ConsoleKey.LeftArrow:
                     case ConsoleKey.Q:
                         if (dir_index > 0) dir_index--;
+                        else dir_index = grid.DoableDirections.Length - 1;
                         ui_direction = grid.DoableDirections[dir_index];
                         break;
                     case ConsoleKey.RightArrow:
                     case ConsoleKey.D:
                         if (dir_index < grid.DoableDirections.Length - 1) dir_index++;
+                        else dir_index = 0;
                         ui_direction = grid.DoableDirections[dir_index];
                         break;
                     
