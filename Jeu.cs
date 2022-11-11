@@ -24,7 +24,7 @@ namespace PooProject {
         private int ui_y = -1;
         private Direction ui_direction = new Direction(0, 0);
         private int ui_wordLength = 2;
-        private string save_path;
+        private string save_path = "game.csv";
 
         private DateTime ui_end_time = DateTime.Now;
         
@@ -103,12 +103,13 @@ namespace PooProject {
             grid = new Plateau(dictionnary);
             
             // if we resume, we load the grid from the save file instead of creating a new one
-            if (resume) grid.FromFile("grid.csv");
+            string grid_path = save_path.Replace("game", "grid");
+            if (resume) grid.FromFile(grid_path);
             else grid.Load(difficulty);
 
             // Save current game
             ToFile();
-            grid.ToFile("grid.csv");
+            grid.ToFile(grid_path);
 
             LoopPlayerTurn(player);
         }
