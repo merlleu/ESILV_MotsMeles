@@ -82,21 +82,16 @@ namespace PooProject {
             // instead of using a list, we use a pre-allocated array of 8 (max number of directions).
             // this is faster than using a List because we'll do tons of operations on these arrays.
             // we also use a counter to keep track of the number of directions.
-
+            
+            Direction[] existing_directions = GetAllDirections();
             Direction[] directions = new Direction[8];
             int d_index = 0;
 
-            // we use a nested loop to generate all the possible directions
-            // (from -1 to 1 for x and y)
             // for each direction, we check if it's valid and add it to the array if it is.
-            // (0,0) is NEVER a valid direction.
-            for (int i = -1; i <= 1; i++) {
-                for (int j = -1; j <= 1; j++) {
-                    Direction d = new Direction(i, j);
-                    if (d.IsValid(difficulty)) {
-                        directions[d_index] = d;
-                        d_index++;
-                    }
+            for(int i = 0; i < existing_directions.Length; i++) {
+                if (existing_directions[i].IsValid(difficulty)) {
+                    directions[d_index] = existing_directions[i];
+                    d_index++;
                 }
             }
 
@@ -105,6 +100,21 @@ namespace PooProject {
             Array.Copy(directions, result, d_index);
 
             return result;
+        }
+
+        /// Returns an array of all the directions.
+        /// The order is: E, SE, S, SO, O, NO, N, NE.
+        public static Direction[] GetAllDirections() {
+            return new Direction[] {
+                new Direction(1, 0),
+                new Direction(1, 1),
+                new Direction(0, 1),
+                new Direction(-1, 1),
+                new Direction(-1, 0),
+                new Direction(-1, -1),
+                new Direction(0, -1),
+                new Direction(1, -1)
+            };
         }
 
 
