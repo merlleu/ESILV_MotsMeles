@@ -44,7 +44,6 @@ namespace PooProject {
             this.save_path = save_path;
             FromFile();
             grid = new Plateau(dictionnary);
-
         }
 
         /// Ask user for the round duration.
