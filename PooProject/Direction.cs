@@ -161,11 +161,13 @@ namespace PooProject {
             return repr;
         }
 
-        public string Details() {
-            return $"Direction({ToString()},{x},{y})";
-        }
-        public bool Egal(Direction other) {
-            return x == other.x && y == other.y;
-        }
+        // The following methods were used for debugging.
+
+        // public string Details() {
+        //     return $"Direction({ToString()},{x},{y})";
+        // }
+        // public bool Egal(Direction other) {
+        //     return x == other.x && y == other.y;
+        // }
     }
 }

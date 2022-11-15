@@ -25,4 +25,10 @@
     <ProjectReference Include="..\PooProject\PooProject.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="../resources/*.*" Link="resources/%(FileName)%(Extension)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

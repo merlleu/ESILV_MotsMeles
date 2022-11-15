@@ -129,7 +129,7 @@ namespace PooProject {
                     // Unreachable.
                     throw new Exception("GameLanguage not supported");
             }
-            return path;
+            return "resources\\" + path;
         }
 
         /// We do not allow the user to change the dictionnary once it has been created.
