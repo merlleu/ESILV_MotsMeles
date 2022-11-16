@@ -94,7 +94,7 @@ namespace PooProject {
             for (int i = 0; i < width; i++) {
                 string[] cells = lines[i + 2].Split(';');
                 for (int j = 0; j < height; j++) {
-                    grid[i, j] = cells[j][0];
+                    grid[j, i] = cells[j][0];
                 }
             }
 
