@@ -104,7 +104,7 @@ namespace PooProject {
             // there are no words of length 0.
 
             string[][] dictionnary = new string[maxLength + 1][];
-            for (int i = 0; i < lines.Length; i += 2) {
+            for (int i = 0; i < lines.Length - 1; i += 2) {
                 // parse letter count
                 int letterCount = int.Parse(lines[i]);
                 // split words by space into array
