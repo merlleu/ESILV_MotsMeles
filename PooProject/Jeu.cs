@@ -163,6 +163,7 @@ namespace PooProject {
                 ToFile();
             }
 
+            player.ClearWords();
 
             if (player.Words.Count != grid.Words.Length && DateTime.Now > ui_end_time) {
                 ShowTimeOut(player);
@@ -209,7 +210,6 @@ namespace PooProject {
                 // we calculate the minimum width of the bar
                 used_width += players[i].Nom.Length + 4 + players[i].Score.ToString().Length + 2;
                 total_points += 50 + players[i].Score;
-                
             }
 
             // we calculate the remaining width
@@ -223,19 +223,20 @@ namespace PooProject {
             // the more points a player has, the more space he gets
             for (int i = 0; i < ranking.Length; i++) {
                 Joueur player = players[ranking[i]];
-                Console.ForegroundColor = GetPlayerColor(ranking[i]);
-                Console.Write($"[{player.Nom} ({player.Score})");
+                Console.BackgroundColor = GetPlayerColorPrimary(ranking[i]);
+                Console.Write($" {player.Nom} ({player.Score})");
 
                 int bar_width = (int) Math.Round((double) (50+player.Score) / total_points * remaining_width);
                 if (bar_width > 0) Console.Write(new string(' ', bar_width));
-                Console.Write("] ");
+                Console.Write(" ");
+                Console.BackgroundColor = ConsoleColor.Black;
+                Console.Write(" ");
             }
 
-            Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine();
         }
 
-        ConsoleColor GetPlayerColor (int player_index) {
+        ConsoleColor GetPlayerColorPrimary (int player_index) {
             switch (player_index) {
                 case 0: return ConsoleColor.Red;
                 case 1: return ConsoleColor.Green;
@@ -256,7 +257,7 @@ namespace PooProject {
             ShowRankingHeader();
             string TimeLeft = (ui_end_time - DateTime.Now).ToString(@"mm\:ss");
             WriteWithColor($"[Round {difficulty} | ", ConsoleColor.White);
-            WriteWithColor($"{player.Nom}", GetPlayerColor(cur_player));
+            WriteWithColor($"{player.Nom}", GetPlayerColorPrimary(cur_player));
             WriteWithColor("] Temps restant : ", ConsoleColor.White);
             WriteWithColor($"{TimeLeft}\n\n", ConsoleColor.Blue);
             Console.ForegroundColor = ConsoleColor.White;
@@ -269,7 +270,7 @@ namespace PooProject {
             Console.Clear();
             ShowRankingHeader();
             WriteWithColor($"[Round {difficulty} | ", ConsoleColor.White);
-            WriteWithColor($"{player.Nom}", GetPlayerColor(cur_player));
+            WriteWithColor($"{player.Nom}", GetPlayerColorPrimary(cur_player));
             WriteWithColor("] ", ConsoleColor.White);
             WriteWithColor("Temps écoulé !\n\n\n", ConsoleColor.Red);
             Console.ForegroundColor = ConsoleColor.White;
@@ -291,7 +292,7 @@ namespace PooProject {
             int[] ranking = GetPlayerRanking();
             for (int i = 0; i < ranking.Length; i++) {
                 Joueur player = players[ranking[i]];
-                ConsoleColor color = GetPlayerColor(ranking[i]);
+                ConsoleColor color = GetPlayerColorPrimary(ranking[i]);
                 WriteWithColor($"{i+1} - ", ConsoleColor.White);
                 WriteWithColor(player.Nom, color);
                 WriteWithColor(" : ", ConsoleColor.White);
