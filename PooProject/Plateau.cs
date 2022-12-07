@@ -106,7 +106,7 @@ namespace PooProject {
             grid = new char[width, height]; // fill with \0
             Random r = new Random();
             // the basic idea is: 
-            // N times: 
+            // until not enough words are placed:
             // - pick a direction
             // - pick a starting point
             // - pick a word length
