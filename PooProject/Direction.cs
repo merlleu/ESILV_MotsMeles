@@ -1,13 +1,24 @@
 using System;
 
 namespace PooProject {
+    /// <summary>
+    /// This class represents a direction in two-dimensional space.
+    /// It has two private fields `x` and `y` that represent the x and y
+    /// components of the direction, respectively.
+    /// </summary>
     public class Direction {
+        #region Fields
         private int x;
         private int y;
+        #endregion
 
+        #region Constructors
+
+        /// <summary>
         /// Parse the direction from a string.
         /// Valid strings are: N,S,E,O,NE,NO,SE,SO.
         /// If the string is invalid, the direction is set to 0,0.
+        /// </summary>
         public Direction(string s) {
             bool valid = true;
             // to simplify the code, we match letter by letter
@@ -33,27 +44,42 @@ namespace PooProject {
                 }
             }
         }
-        
+
+        /// <summary>
         /// Creates a direction two integers x and y.
+        /// </summary>
         public Direction(int x, int y) {
             this.x = x;
             this.y = y;
         }
 
+        #endregion
 
+        #region Properties
+
+        /// <summary>
         /// Returns the x component of the direction.
         /// x and y are either -1, 0 or 1.
+        /// </summary>
         public int X {
             get => x;
         }
-        
+
+        /// <summary>
         /// Returns the y component of the direction.
         /// x and y are either -1, 0 or 1.
+        /// </summary>
         public int Y {
             get => y;
         }
 
+        #endregion
+
+        #region Public methods
+
+        /// <summary>
         /// Checks if the direction is valid (according to the game rules).
+        /// </summary>
         public bool IsValid(int difficulty) {
             bool ok = false;
             switch (difficulty) {
@@ -77,12 +103,26 @@ namespace PooProject {
             return ok;
         }
 
+        /// <summary>
+        /// A direction is valid if it is not 0,0.
+        /// This methods returns if the direction is valid.
+        /// </summary>
+        public bool IsNull() {
+            return x == 0 && y == 0;
+        }
+
+        #endregion
+
+        #region static methods
+
+        /// <summary>
         /// Returns an array of all the valid directions for a given difficulty.
+        /// </summary>
         public static Direction[] GetAvailableDirections(int difficulty) {
             // instead of using a list, we use a pre-allocated array of 8 (max number of directions).
             // this is faster than using a List because we'll do tons of operations on these arrays.
             // we also use a counter to keep track of the number of directions.
-            
+
             Direction[] existing_directions = GetAllDirections();
             Direction[] directions = new Direction[8];
             int d_index = 0;
@@ -102,8 +142,10 @@ namespace PooProject {
             return result;
         }
 
+        /// <summary>
         /// Returns an array of all the directions.
         /// The order is: E, SE, S, SO, O, NO, N, NE.
+        /// </summary>
         public static Direction[] GetAllDirections() {
             return new Direction[] {
                 new Direction(1, 0),
@@ -117,16 +159,13 @@ namespace PooProject {
             };
         }
 
+        #endregion
 
+        #region Representations
 
-        /// A direction is valid if it is not 0,0.
-        /// This methods returns if the direction is valid.
-        public bool IsNull() {
-            return x == 0 && y == 0;
-        }
-
-
+        /// <summary>
         /// Returns a string representation of the direction.
+        /// </summary>
         public override string ToString() {
             string repr = "";
             switch ((x,y)) {
@@ -160,14 +199,7 @@ namespace PooProject {
             }
             return repr;
         }
-
-        // The following methods were used for debugging.
-
-        // public string Details() {
-        //     return $"Direction({ToString()},{x},{y})";
-        // }
-        // public bool Egal(Direction other) {
-        //     return x == other.x && y == other.y;
-        // }
+        
+        #endregion
     }
 }

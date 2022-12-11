@@ -1,37 +1,38 @@
 using System;
 
 namespace PooProject {
+    /// <summary>
     /// Jeu is the main class of the program.
     /// It has all the available context and is responsible for the game logic.
     /// It is created after the dictionnary has been loaded and the grid created.
+    /// </summary>
     public class Jeu {
-        // list of players
-        private Joueur[] players;
-
-        // current grid & previous grids
-        private Plateau grid;
-        private List<Plateau> grid_history;
+        #region Game Fields
+        private Joueur[] players; // list of players
+        private Plateau grid; // current grid
+        // private List<Plateau> grid_history;
 
         private Dictionnaire dictionnary;
-        // number of seconds before the turn ends
-        private int timeout;
-
-        // round number in range [1; 5]
-        private int difficulty;
-        private int cur_player;
-
-        private int ui_x = -1;
-        private int ui_y = -1;
-        private Direction ui_direction = new Direction(0, 0);
-        private int ui_wordLength = 2;
-        private string save_path = "game.csv";
-
-        private DateTime ui_end_time = DateTime.Now;
         
+        private int timeout; // number of seconds before the turn ends
+        private int difficulty; // round number in range [1; 5]
+        private int cur_player; // current player index
+        private string save_path = "game.csv"; // path to save file
+        private DateTime round_end_time = DateTime.Now; // time when the turn ends
+        #endregion
+
+        #region Word selector UI variables
+        private int ui_x = -1; // selected X coordinate, -1 if none
+        private int ui_y = -1; // selected Y coordinate, -1 if none
+        private Direction ui_direction = new Direction(0, 0); // selected direction, 0,0 if none
+        private int ui_wordLength = 2; // selected word length, 2 if none
+        #endregion
+   
+        #region Constructors
         public Jeu() {
             this.dictionnary = new Dictionnaire();
             this.grid = new Plateau(dictionnary);
-            this.grid_history = new List<Plateau>();
+            // this.grid_history = new List<Plateau>();
             this.players = LoadPlayers();
             this.timeout = AskTimeout();
             this.difficulty = 1;
@@ -45,6 +46,10 @@ namespace PooProject {
             FromFile();
             grid = new Plateau(dictionnary);
         }
+
+        #endregion
+
+        #region Constructors input helpers
 
         /// Ask user for the round duration.
         static int AskTimeout() {
@@ -61,7 +66,7 @@ namespace PooProject {
         
         // Ask user for the number of players and their names.
         static Joueur[] LoadPlayers() {
-            Console.Write("Player count (1-9) > ");
+            Console.Write("Combien de joueurs ? (1-9) > ");
             // try to parse the input as an int
             int nb;
             int.TryParse(Console.ReadLine(), out nb);
@@ -80,6 +85,10 @@ namespace PooProject {
             
             return players;
         }
+
+        #endregion
+
+        #region Game logic
         
         public void Start(bool resume = false) {
             for (;difficulty <= 5; difficulty ++) {
@@ -96,7 +105,7 @@ namespace PooProject {
 
         void StartPlayerTurn(Joueur player, bool resume) {
             // first, we set the timeout
-            ui_end_time = DateTime.Now.AddSeconds(timeout);
+            round_end_time = DateTime.Now.AddSeconds(timeout);
             if (!resume) player.ClearWords();
             // grid_history.Add(grid);
             grid = new Plateau(dictionnary);
@@ -123,13 +132,13 @@ namespace PooProject {
                 RefreshPlayerUI(player);
 
                 int step = 0;
-                while (step < 3 && DateTime.Now <= ui_end_time) {
+                while (step < 3 && DateTime.Now <= round_end_time) {
                     if (step == 0) step += AskForPosition(player);
                     else if (step == 1) step += AskForDirection(player);
                     else if (step == 2) step += AskForWordLength(player);
                 }
 
-                if (DateTime.Now > ui_end_time) {
+                if (DateTime.Now > round_end_time) {
                     playing = false;
                     continue;
                 }
@@ -165,12 +174,11 @@ namespace PooProject {
 
             player.ClearWords();
 
-            if (player.Words.Count != grid.Words.Length && DateTime.Now > ui_end_time) {
+            if (player.Words.Count != grid.Words.Length && DateTime.Now > round_end_time) {
                 ShowTimeOut(player);
             }
             
         }
-
 
         /// This method returns the indexes of the players
         /// Sorted by HIGHEST SCORE first then by their names if they have the same score. 
@@ -199,6 +207,9 @@ namespace PooProject {
             return ranking;
         }
 
+        #endregion
+
+        #region UI renderers & helpers
         /// Displays the ranking on top of the screen
         /// It shows a bar filled with players
         /// [Player 1 (10)] [Player 2 (5)] [Player 3 (0)]
@@ -255,7 +266,7 @@ namespace PooProject {
         void RefreshPlayerUI (Joueur player, bool keep_cursor = false) {
             Console.Clear();
             ShowRankingHeader();
-            string TimeLeft = (ui_end_time - DateTime.Now).ToString(@"mm\:ss");
+            string TimeLeft = (round_end_time - DateTime.Now).ToString(@"mm\:ss");
             WriteWithColor($"[Round {difficulty} | ", ConsoleColor.White);
             WriteWithColor($"{player.Nom}", GetPlayerColorPrimary(cur_player));
             WriteWithColor("] Temps restant : ", ConsoleColor.White);
@@ -282,7 +293,6 @@ namespace PooProject {
 
         /// At the end of the game
         /// It displays the ranking.
-
         void ShowGameSummary() {
             Console.Clear();
             ShowRankingHeader();
@@ -350,7 +360,7 @@ namespace PooProject {
                 Console.SetCursorPosition(pos, Console.CursorTop);
 
 
-            } while(keyinfo.Key != ConsoleKey.Enter && DateTime.Now <= ui_end_time);
+            } while(keyinfo.Key != ConsoleKey.Enter && DateTime.Now <= round_end_time);
 
             Console.WriteLine();
             return 1;
@@ -396,7 +406,7 @@ namespace PooProject {
                         ui_direction = new Direction(0, 0);
                         return -1;
                 }
-            } while(keyinfo.Key != ConsoleKey.Enter && DateTime.Now <= ui_end_time);
+            } while(keyinfo.Key != ConsoleKey.Enter && DateTime.Now <= round_end_time);
 
             Console.WriteLine();
             return 1;
@@ -445,11 +455,15 @@ namespace PooProject {
                         ui_wordLength = 2;
                         return -1;
                 }
-            } while(keyinfo.Key != ConsoleKey.Enter && DateTime.Now <= ui_end_time);
+            } while(keyinfo.Key != ConsoleKey.Enter && DateTime.Now <= round_end_time);
 
             Console.WriteLine();
             return 1;
         }
+
+        #endregion
+
+        #region load/save
 
         void ToFile() {
             // file format:
@@ -481,5 +495,7 @@ namespace PooProject {
                 players[i-1] = new Joueur(player_data[0], int.Parse(player_data[1]), int.Parse(player_data[2]), player_data[3].Split(' ').ToList());
             }
         }
+
+        #endregion
     }
 }
