@@ -316,9 +316,9 @@ namespace PooProject {
                 s += $"{words[i]};";
             }
             s += "\n";
-            for (int i = 0; i < width; i++) {
-                for (int j = 0; j < height; j++) {
-                    s += grid[j, i] + (j == height - 1 ? "": ";");
+            for (int i = 0; i < height; i++) {
+                for (int j = 0; j < width; j++) {
+                    s += grid[j, i] + ";";
                 }
                 s += "\n";
             }
@@ -350,10 +350,13 @@ namespace PooProject {
             }
 
             grid = new char[width, height];
-            for (int i = 0; i < width; i++) {
+            Console.WriteLine("grid.GetLength(0): " + grid.GetLength(0) + ", grid.GetLength(1): " + grid.GetLength(1) + ", width: " + width + ", height: " + height);
+            for (int i = 0; i < height; i++) {
                 string[] cells = lines[i + 2].Split(';');
-                for (int j = 0; j < height; j++) {
-                    grid[j, i] = cells[j][0];
+                Console.WriteLine($"cells: {cells.Length}, width: {width}, height: {height}, i: {i}");
+                for (int j = 0; j < width; j++) {
+                    var t = cells[j][0];
+                    grid[j, i] = t;
                 }
             }
 

@@ -31,9 +31,9 @@ namespace PooProject {
             if (!System.IO.File.Exists(saveFile)) {
                 return false;
             }
-            Console.WriteLine("Voulez-vous charger la partie précédente ? (y/n)");
+            Console.Write("Voulez-vous charger la partie précédente ? (o/n) > ");
             string answer = Console.ReadLine();
-            if (answer == "y") {
+            if (answer == "o") {
                 return true;
             } else if (answer == "n") {
                 return false;
