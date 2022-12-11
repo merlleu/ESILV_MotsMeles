@@ -29,6 +29,9 @@ namespace PooProject {
         #endregion
    
         #region Constructors
+        /// <summary>
+        /// Creates a new game.
+        /// </summary>
         public Jeu() {
             this.dictionnary = new Dictionnaire();
             this.grid = new Plateau(dictionnary);
@@ -39,19 +42,22 @@ namespace PooProject {
             this.save_path = "game.csv";
         }
 
-
-        /// Load Jeu from save file.
+        /// <summary>
+        /// Load game from save file.
+        /// </summary>
+        /// <param name="save_path">Path to the save file.</param>
         public Jeu(string save_path) {
             this.save_path = save_path;
             FromFile();
             grid = new Plateau(dictionnary);
         }
-
         #endregion
 
         #region Constructors input helpers
-
+        /// <summary>
         /// Ask user for the round duration.
+        /// </summary>
+        /// <returns>The round duration in seconds.</returns>
         static int AskTimeout() {
             Console.Write("Entrez le temps de réflexion par joueur (en secondes, min: 1) > ");
             int timeout;
@@ -64,7 +70,10 @@ namespace PooProject {
             return timeout;
         }
         
-        // Ask user for the number of players and their names.
+        /// <summary>
+        /// Ask user for the number of players and their names.
+        /// </summary>
+        /// <returns>An array of players.</returns>
         static Joueur[] LoadPlayers() {
             Console.Write("Combien de joueurs ? (1-9) > ");
             // try to parse the input as an int
@@ -89,7 +98,10 @@ namespace PooProject {
         #endregion
 
         #region Game logic
-        
+        /// <summary>
+        /// Start the game.
+        /// </summary>
+        /// <param name="resume">If true, the round will start at it's latest saved point in time.</param>
         public void Start(bool resume = false) {
             for (;difficulty <= 5; difficulty ++) {
                 if (!resume) cur_player = 0;
@@ -103,6 +115,11 @@ namespace PooProject {
             ShowGameSummary();
         }
 
+        /// <summary>
+        /// Start a player turn.
+        /// </summary>
+        /// <param name="player">The player whose turn it is.</param>
+        /// <param name="resume">If true, the player words won't be cleared.</param>
         void StartPlayerTurn(Joueur player, bool resume) {
             // first, we set the timeout
             round_end_time = DateTime.Now.AddSeconds(timeout);
@@ -122,6 +139,10 @@ namespace PooProject {
             LoopPlayerTurn(player);
         }
 
+        /// <summary>
+        /// Player turn loop.
+        /// </summary>
+        /// <param name="player">The player whose turn it is.</param>
         void LoopPlayerTurn(Joueur player) {
             bool playing = true;
             while (playing) {
@@ -180,8 +201,11 @@ namespace PooProject {
             
         }
 
+        /// <summary>
         /// This method returns the indexes of the players
         /// Sorted by HIGHEST SCORE first then by their names if they have the same score. 
+        /// </summary>
+        /// <returns>An array of player indexes sorted by their ranking.</returns>
         int[] GetPlayerRanking() {
             int[] ranking = new int[players.Length];
             for (int i = 0; i < players.Length; i++) {
@@ -206,13 +230,14 @@ namespace PooProject {
 
             return ranking;
         }
-
         #endregion
 
         #region UI renderers & helpers
+        /// <summary>
         /// Displays the ranking on top of the screen
         /// It shows a bar filled with players
         /// [Player 1 (10)] [Player 2 (5)] [Player 3 (0)]
+        /// </summary>
         void ShowRankingHeader() {
             int total_width = Console.WindowWidth - 2;
             int used_width = 0;
@@ -246,7 +271,12 @@ namespace PooProject {
 
             Console.WriteLine();
         }
-
+        
+        /// <summary>
+        /// Gets the color of a player.
+        /// </summary>
+        /// <param name="player_index">The index of the player.</param>
+        /// <returns>The color of the player.</returns>
         ConsoleColor GetPlayerColorPrimary (int player_index) {
             switch (player_index) {
                 case 0: return ConsoleColor.Red;
@@ -262,8 +292,11 @@ namespace PooProject {
             }
         }
 
-
-        void RefreshPlayerUI (Joueur player, bool keep_cursor = false) {
+        /// <summary>
+        /// Renders main game UI for a player.
+        /// </summary>
+        /// <param name="player">The player to render the UI for.</param>
+        void RefreshPlayerUI (Joueur player) {
             Console.Clear();
             ShowRankingHeader();
             string TimeLeft = (round_end_time - DateTime.Now).ToString(@"mm\:ss");
@@ -277,6 +310,10 @@ namespace PooProject {
             Console.WriteLine();
         }
 
+        /// <summary>
+        /// Displays time out message.
+        /// </summary>
+        /// <param name="player">The player who timed out.</param>
         void ShowTimeOut(Joueur player) {
             Console.Clear();
             ShowRankingHeader();
@@ -290,9 +327,10 @@ namespace PooProject {
             Console.ReadLine();
         }
 
-
+        /// <summary>
         /// At the end of the game
         /// It displays the ranking.
+        /// </summary>
         void ShowGameSummary() {
             Console.Clear();
             ShowRankingHeader();
@@ -318,15 +356,22 @@ namespace PooProject {
 
         }
 
+        /// <summary>
+        /// Write to console with a specific text color.
+        /// </summary>
+        /// <param name="text">The text to write.</param>
+        /// <param name="color">The color to use.</param>
         void WriteWithColor(string text, ConsoleColor color) {
             Console.ForegroundColor = color;
             Console.Write(text);
         }
 
         
-
-        /// Ask user for a position and return it.
-        /// The position is a single letter
+        /// <summary>
+        /// Ask user for a position.
+        /// </summary>
+        /// <param name="player">The player to ask for a position.</param>
+        /// <returns>1 if we go to the next step, -1 to go back</returns>
         int AskForPosition(Joueur player) {
             ConsoleKeyInfo keyinfo;
             do {
@@ -366,6 +411,11 @@ namespace PooProject {
             return 1;
         }
 
+        /// <summary>
+        /// Ask user for a direction and return it.
+        /// </summary>
+        /// <param name="player">The player to ask for a direction.</param>
+        /// <returns>1 if we go to the next step, -1 to go back</returns>
         int AskForDirection(Joueur player) {
             int dir_index = 0;
             ui_direction = grid.DoableDirections[dir_index];
@@ -411,7 +461,12 @@ namespace PooProject {
             Console.WriteLine();
             return 1;
         }
-
+        
+        /// <summary>
+        /// Ask user for a word length.
+        /// </summary>
+        /// <param name="player">The player to ask for a word length.</param>
+        /// <returns>1 if we go to the next step, -1 to go back</returns>
         int AskForWordLength(Joueur player) {
             // max length without going out of the grid
             int max_length = 1;
@@ -460,11 +515,12 @@ namespace PooProject {
             Console.WriteLine();
             return 1;
         }
-
         #endregion
 
         #region load/save
-
+        /// <summary>
+        /// Save the game to a file.
+        /// </summary>
         void ToFile() {
             // file format:
             // difficulty,lang,player_count,timeout,current_player
@@ -481,6 +537,9 @@ namespace PooProject {
             File.WriteAllText(save_path, s);
         }
 
+        /// <summary>
+        /// Load the game from a file.
+        /// </summary>
         void FromFile() {
             string[] lines = File.ReadAllLines(save_path);
             string[] first_line = lines[0].Split(';');
@@ -495,7 +554,6 @@ namespace PooProject {
                 players[i-1] = new Joueur(player_data[0], int.Parse(player_data[1]), int.Parse(player_data[2]), player_data[3].Split(' ').ToList());
             }
         }
-
         #endregion
     }
 }
