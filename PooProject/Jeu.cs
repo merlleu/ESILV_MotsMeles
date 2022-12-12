@@ -551,7 +551,11 @@ namespace PooProject {
 
             for (int i = 1; i < lines.Length; i++) {
                 string[] player_data = lines[i].Split(';');
-                players[i-1] = new Joueur(player_data[0], int.Parse(player_data[1]), int.Parse(player_data[2]), player_data[3].Split(' ').ToList());
+                string[] words = new string[0];
+                if (player_data[3] != "") {
+                    words = player_data[3].Split(',');
+                }
+                players[i-1] = new Joueur(player_data[0], int.Parse(player_data[1]), int.Parse(player_data[2]), words.ToList());
             }
         }
         #endregion
